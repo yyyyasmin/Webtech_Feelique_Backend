@@ -15,7 +15,7 @@ public class MoodEntry {
 
     private String mood;
     private LocalDateTime time;
-
+    private String note;
     // Leerer Konstruktor (wird von Hibernate benötigt)
     public MoodEntry() {}
 
@@ -23,6 +23,7 @@ public class MoodEntry {
     public MoodEntry(String mood, LocalDateTime time) {
         this.mood = mood;
         this.time = time;
+        this.note = note;
     }
 
     // Getter und Setter
@@ -48,5 +49,13 @@ public class MoodEntry {
 
     public void setTime(LocalDateTime time) {
         this.time = time;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
     }
 }
