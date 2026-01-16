@@ -1,52 +1,69 @@
 package htw.webtech.Feelique.rest.controller;
 
-import htw.webtech.Feelique.business.repository.UserRepository;
 import htw.webtech.Feelique.business.service.MoodEntryService;
 import htw.webtech.Feelique.rest.model.MoodEntry;
-import htw.webtech.Feelique.rest.model.User;
 import jakarta.validation.Valid;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequestMapping("/moods")
+@CrossOrigin(origins = "http://localhost:5173")
 public class MoodEntryController {
 
-    private final MoodEntryService moodEntryService;
-    private final UserRepository userRepository;
+    private final MoodEntryService service;
 
-    public MoodEntryController(MoodEntryService moodEntryService, UserRepository userRepository) {
-        this.moodEntryService = moodEntryService;
-        this.userRepository = userRepository;
+    public MoodEntryController(MoodEntryService service) {
+        this.service = service;
     }
 
+    // 1) Alle anzeigen
     @GetMapping
-    public List<MoodEntry> getAllMoods(Authentication authentication) {
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElseThrow();
-        return moodEntryService.getMoodsByUser(user);
+    public List<MoodEntry> getAll() {
+        return service.getAll();
     }
 
-    @PostMapping
-    public MoodEntry createMood(@Valid @RequestBody MoodEntry moodEntry, Authentication authentication) {
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElseThrow();
-        moodEntry.setUser(user);
-        return moodEntryService.saveMood(moodEntry);
-    }
-
+    // 2) Einzelnen anzeigen
     @GetMapping("/{id}")
-    public MoodEntry getMoodById(@PathVariable Long id, Authentication authentication) {
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElseThrow();
-        MoodEntry entry = moodEntryService.getMoodById(id);
+    public MoodEntry getById(@PathVariable Long id) {
+        return service.getById(id);
+    }
 
-        if (!entry.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Zugriff verweigert");
-        }
+    // 3) Erstellen
+    @PostMapping
+    public MoodEntry create(@Valid @RequestBody MoodEntry moodEntry) {
+        return service.create(moodEntry);
+    }
 
-        return entry;
+    // 4) Bearbeiten
+    @PutMapping("/{id}")
+    public MoodEntry update(@PathVariable Long id, @Valid @RequestBody MoodEntry updated) {
+        return service.update(id, updated);
+    }
+
+    // 5) Löschen
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
+    }
+
+    // 6) Kalender/Datum: /moods/by-date?date=2026-01-16
+    @GetMapping("/by-date")
+    public List<MoodEntry> byDate(@RequestParam String date) {
+        return service.getByDate(LocalDate.parse(date));
+    }
+
+    // 7) Suche: /moods/search?q=stress
+    @GetMapping("/search")
+    public List<MoodEntry> search(@RequestParam String q) {
+        return service.search(q);
+    }
+
+    // Bonus: Filter nach Mood: /moods/filter?mood=Traurig
+    @GetMapping("/filter")
+    public List<MoodEntry> filter(@RequestParam String mood) {
+        return service.filterByMood(mood);
     }
 }
